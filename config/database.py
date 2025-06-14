@@ -1,9 +1,29 @@
+import os
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-client = MongoClient(
-    "mongodb+srv://josemqu:LmfXA2ZNj5rskBm4@codercluster.tgft5r9.mongodb.net/?retryWrites=true&w=majority&appName=CoderCluster"
-)
+# Load environment variables from .env file
+load_dotenv()
 
-db = client.prices
+# Get database credentials from environment variables
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_HOST = os.getenv('DB_HOST')
+DB_NAME = os.getenv('DB_NAME')
 
-collection_name = db["stations2"]
+# Create MongoDB connection string
+MONGO_URI = f"mongodb+srv://{DB_USER}:{DB_PASS}@{DB_HOST}/?retryWrites=true&w=majority&appName=CoderCluster"
+
+# Initialize MongoDB client
+try:
+    client = MongoClient(MONGO_URI)
+    # Test the connection
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+    
+    db = client[DB_NAME]
+    collection_name = db["stations2"]
+    
+except Exception as e:
+    print(f"Error connecting to MongoDB: {e}")
+    raise
