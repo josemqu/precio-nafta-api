@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Any
+from datetime import datetime
 
 
 class Geometry(BaseModel):
@@ -9,11 +10,11 @@ class Geometry(BaseModel):
 
 class Price(BaseModel):
     price: float
-    date: Any
+    date: datetime
 
 
 class Product(BaseModel):
-    productId: int
+    productId: int  # enum (2, 3, 6, 19, 21)
     productName: str
     prices: List[Price]
 
