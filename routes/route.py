@@ -59,23 +59,25 @@ async def get_stations(
             pipeline.append({"$match": product_match})
 
         # Agrupar para mantener la estructura de la estación
-        pipeline.extend([
-            {
-                "$group": {
-                    "_id": "$_id",
-                    "stationId": {"$first": "$stationId"},
-                    "stationName": {"$first": "$stationName"},
-                    "address": {"$first": "$address"},
-                    "town": {"$first": "$town"},
-                    "province": {"$first": "$province"},
-                    "flag": {"$first": "$flag"},
-                    "flagId": {"$first": "$flagId"},
-                    "geometry": {"$first": "$geometry"},
-                    "products": {"$push": "$products"}
-                }
-            },
-            {"$limit": limit}
-        ])
+        pipeline.extend(
+            [
+                {
+                    "$group": {
+                        "_id": "$_id",
+                        "stationId": {"$first": "$stationId"},
+                        "stationName": {"$first": "$stationName"},
+                        "address": {"$first": "$address"},
+                        "town": {"$first": "$town"},
+                        "province": {"$first": "$province"},
+                        "flag": {"$first": "$flag"},
+                        "flagId": {"$first": "$flagId"},
+                        "geometry": {"$first": "$geometry"},
+                        "products": {"$push": "$products"},
+                    }
+                },
+                {"$limit": limit},
+            ]
+        )
 
         # Ejecutar la agregación
         cursor = collection_name.aggregate(
@@ -127,23 +129,25 @@ async def get_station(
             pipeline.append({"$match": product_match})
 
         # Agrupar para mantener la estructura de la estación
-        pipeline.extend([
-            {
-                "$group": {
-                    "_id": "$_id",
-                    "stationId": {"$first": "$stationId"},
-                    "stationName": {"$first": "$stationName"},
-                    "address": {"$first": "$address"},
-                    "town": {"$first": "$town"},
-                    "province": {"$first": "$province"},
-                    "flag": {"$first": "$flag"},
-                    "flagId": {"$first": "$flagId"},
-                    "geometry": {"$first": "$geometry"},
-                    "products": {"$push": "$products"}
-                }
-            },
-            {"$limit": 1}  # Solo debería haber un resultado
-        ])
+        pipeline.extend(
+            [
+                {
+                    "$group": {
+                        "_id": "$_id",
+                        "stationId": {"$first": "$stationId"},
+                        "stationName": {"$first": "$stationName"},
+                        "address": {"$first": "$address"},
+                        "town": {"$first": "$town"},
+                        "province": {"$first": "$province"},
+                        "flag": {"$first": "$flag"},
+                        "flagId": {"$first": "$flagId"},
+                        "geometry": {"$first": "$geometry"},
+                        "products": {"$push": "$products"},
+                    }
+                },
+                {"$limit": 1},  # Solo debería haber un resultado
+            ]
+        )
 
         # Ejecutar la agregación
         result = list(collection_name.aggregate(pipeline))
@@ -156,14 +160,13 @@ async def get_station(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Estación con ID {station_id} no encontrada",
                 )
-            
+
             # Si la estación existe pero no tiene productos que coincidan con los filtros
             if product or product_id is not None:
                 station["products"] = []
                 return individual_serial(station)
-            
-            return individual_serial(station)
 
+            return individual_serial(station)
 
         return individual_serial(result[0])
 
@@ -368,20 +371,22 @@ async def get_station_last_prices(
 ):
     try:
         # Construir el pipeline de agregación
-        pipeline = [{"$match": {"stationId": station_id}}]
+        pipeline = [
+            # Filtrar por station_id
+            {"$match": {"stationId": station_id}},
+            # Descomponer los productos
+            {"$unwind": "$products"},
+        ]
 
-        # Filtros de productos
+        # Añadir filtros de productos si existen
         product_match = {}
         if product:
             product_match["products.productName"] = {"$regex": product, "$options": "i"}
-        if product_id:
+        if product_id is not None:
             product_match["products.productId"] = product_id
 
-        # Si hay filtros de productos, añadirlos al match
         if product_match:
-            if "$and" not in pipeline[0]["$match"]:
-                pipeline[0]["$match"]["$and"] = []
-            pipeline[0]["$match"]["$and"].append(product_match)
+            pipeline.append({"$match": product_match})
 
         # Etapa de descomponer los productos para poder ordenar los precios
         pipeline.extend(
