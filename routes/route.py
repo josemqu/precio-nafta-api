@@ -1,11 +1,12 @@
 from pymongo.errors import PyMongoError
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from fastapi import Query
 from typing import Optional, List
 from fastapi import APIRouter
 from models.stations import Station
 from config.database import collection_name
 from schemas.schema import list_serial, individual_serial
+from auth import get_current_active_user
 
 router = APIRouter()
 
@@ -23,6 +24,7 @@ async def get_stations(
     ),
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
     limit: int = Query(20, ge=1, le=100, description="Límite de resultados (máx. 100)"),
+    current_user: dict = Depends(get_current_active_user),
 ):
     try:
         # Construir el pipeline de agregación
@@ -108,6 +110,7 @@ async def get_station(
         None, description="Filtrar por nombre de producto (ej: Nafta, GNC, Gasoil)"
     ),
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
+    current_user: dict = Depends(get_current_active_user),
 ):
     try:
         # Construir el pipeline de agregación
@@ -195,6 +198,7 @@ async def get_stations_last_prices(
     ),
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
     limit: int = Query(20, ge=1, le=100, description="Límite de resultados (máx. 100)"),
+    current_user: dict = Depends(get_current_active_user),
 ):
     try:
         # Construir el pipeline de agregación
@@ -368,6 +372,7 @@ async def get_station_last_prices(
         None, description="Filtrar por nombre de producto (ej: Nafta, GNC, Gasoil)"
     ),
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
+    current_user: dict = Depends(get_current_active_user),
 ):
     try:
         # Construir el pipeline de agregación
