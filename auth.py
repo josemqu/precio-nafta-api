@@ -19,7 +19,7 @@ load_dotenv()
 # Configuración
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,17 +28,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class Token(BaseModel):
     """Represents a JWT token returned to the client after authentication."""
+
     access_token: str
     token_type: str
 
 
 class TokenData(BaseModel):
     """Holds the username data extracted from a JWT token payload."""
+
     username: Optional[str] = None
 
 
 class User(BaseModel):
     """Represents a user in the system."""
+
     username: str
     email: Optional[str] = None
     full_name: Optional[str] = None
@@ -47,6 +50,7 @@ class User(BaseModel):
 
 class UserInDB(User):
     """Extends User with hashed password for database storage."""
+
     hashed_password: str
 
 
