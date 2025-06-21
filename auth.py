@@ -11,23 +11,6 @@ SECRET_KEY = "cambia_esto_por_una_clave_secreta_segura"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-# Simulación de usuarios (puedes adaptar esto a tu base de datos)
-fake_users_db = {
-    "usuario": {
-        "username": "usuario",
-        "full_name": "Usuario de Ejemplo",
-        "email": "usuario@ejemplo.com",
-        "hashed_password": "$2b$12$KIXQ1z4Q8N6b8P5gR5v1QeFQqfK9w2vE3w8nK5w8nJw8nK5w8nJw8",  # contraseña: "secret"
-        "disabled": False,
-    },
-    "admin": {
-        "username": "admin",
-        "full_name": "Admin de Ejemplo",
-        "email": "admin@ejemplo.com",
-        "hashed_password": "$2b$12$KIXQ1z4Q8N6b8P5gR5v1QeFQqfK9w2vE3w8nK5w8nJw8nK5w8nJw8",  # contraseña: "secret"
-        "disabled": False,
-    },
-}
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -61,18 +44,26 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
+def get_user_from_db(username: str):
+    from config.database import users_collection
+    user_dict = users_collection.find_one({"username": username})
+    if user_dict:
+        return UserInDB(**user_dict)
+    return None
+
 def get_user(db, username: str):
+    # Deprecated: Solo para compatibilidad
     if username in db:
         user_dict = db[username]
         return UserInDB(**user_dict)
 
 
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
+def authenticate_user(username: str, password: str):
+    user = get_user_from_db(username)
     if not user:
-        return False
+        return None
     if not verify_password(password, user.hashed_password):
-        return False
+        return None
     return user
 
 
@@ -101,7 +92,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user_from_db(token_data.username)
     if user is None:
         raise credentials_exception
     return user

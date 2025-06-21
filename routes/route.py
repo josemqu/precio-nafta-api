@@ -47,6 +47,9 @@ async def get_stations(
         if match_stage:
             pipeline.append({"$match": match_stage})
 
+        # Limitar la cantidad de estaciones antes de descomponer productos
+        pipeline.append({"$limit": limit})
+
         # Descomponer los productos
         pipeline.append({"$unwind": "$products"})
 
@@ -61,25 +64,20 @@ async def get_stations(
             pipeline.append({"$match": product_match})
 
         # Agrupar para mantener la estructura de la estación
-        pipeline.extend(
-            [
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "stationId": {"$first": "$stationId"},
-                        "stationName": {"$first": "$stationName"},
-                        "address": {"$first": "$address"},
-                        "town": {"$first": "$town"},
-                        "province": {"$first": "$province"},
-                        "flag": {"$first": "$flag"},
-                        "flagId": {"$first": "$flagId"},
-                        "geometry": {"$first": "$geometry"},
-                        "products": {"$push": "$products"},
-                    }
-                },
-                {"$limit": limit},
-            ]
-        )
+        pipeline.append({
+            "$group": {
+                "_id": "$_id",
+                "stationId": {"$first": "$stationId"},
+                "stationName": {"$first": "$stationName"},
+                "address": {"$first": "$address"},
+                "town": {"$first": "$town"},
+                "province": {"$first": "$province"},
+                "flag": {"$first": "$flag"},
+                "flagId": {"$first": "$flagId"},
+                "geometry": {"$first": "$geometry"},
+                "products": {"$push": "$products"},
+            }
+        })
 
         # Ejecutar la agregación
         cursor = collection_name.aggregate(

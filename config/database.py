@@ -25,6 +25,7 @@ try:
 
     db = client[DB_NAME]
     collection_name = db["stations2"]
+    users_collection = db["users"]
 
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")

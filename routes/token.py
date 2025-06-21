@@ -6,7 +6,6 @@ from auth import (
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
     Token,
-    fake_users_db,
 )
 
 router = APIRouter()
@@ -14,7 +13,7 @@ router = APIRouter()
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
