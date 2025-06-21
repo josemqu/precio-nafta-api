@@ -118,8 +118,58 @@ GET /last-prices/1234?product=Gasoil
 
 ## Notas
 - Todos los endpoints devuelven datos en formato JSON.
-- No requiere autenticación.
+- **Autenticación:** La mayoría de los endpoints requieren autenticación mediante JWT (token Bearer). Solo el endpoint de creación de usuario es público.
+- Para autenticarte, primero debes crear un usuario y luego obtener un token de acceso usando el endpoint `/token`.
 - Los filtros son opcionales salvo que se indique lo contrario.
+
+---
+
+## Autenticación y flujo de uso
+
+### 1. Crear un usuario
+
+Realiza un POST a `/users/` con un JSON como:
+
+```json
+{
+  "username": "usuario",
+  "email": "usuario@example.com",
+  "full_name": "Usuario Demo",
+  "password": "secret"
+}
+```
+
+### 2. Obtener un token de acceso
+
+Haz un POST a `/token` con `username` y `password` en formato `application/x-www-form-urlencoded`:
+
+```bash
+curl -X POST "http://localhost:8000/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=usuario&password=secret"
+```
+
+Respuesta:
+```json
+{
+  "access_token": "<TOKEN_AQUI>",
+  "token_type": "bearer"
+}
+```
+
+### 3. Acceder a endpoints protegidos
+
+Incluye el token en el header `Authorization`:
+
+```
+Authorization: Bearer <TOKEN_AQUI>
+```
+
+Ejemplo con curl:
+
+```bash
+curl -H "Authorization: Bearer <TOKEN_AQUI>" http://localhost:8000/stations
+```
 
 ---
 
