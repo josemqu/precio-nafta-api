@@ -19,7 +19,7 @@ from auth import get_current_active_user
 router = APIRouter()
 
 
-@router.get("/stations", tags=["stations"], response_model=List[Station])
+@router.get("/stations", tags=["Stations"], response_model=List[Station])
 async def get_stations(
     province: Optional[str] = Query(None, description="Filtrar por provincia"),
     town: Optional[str] = Query(None, description="Filtrar por localidad"),
@@ -130,7 +130,7 @@ async def get_stations(
         ) from e
 
 
-@router.get("/stations/{station_id}", tags=["stations"], response_model=Station)
+@router.get("/stations/{station_id}", tags=["Stations"], response_model=Station)
 async def get_station(
     station_id: int,
     product: Optional[str] = Query(
@@ -227,7 +227,7 @@ async def get_station(
         ) from e
 
 
-@router.get("/last-prices", tags=["last prices"], response_model=List[Station])
+@router.get("/last-prices", tags=["Last prices"], response_model=List[Station])
 async def get_stations_last_prices(
     province: Optional[str] = Query(None, description="Filtrar por provincia"),
     town: Optional[str] = Query(None, description="Filtrar por localidad"),
@@ -426,7 +426,7 @@ async def get_stations_last_prices(
         )
 
 
-@router.get("/last-prices/{station_id}", tags=["last prices"], response_model=Station)
+@router.get("/last-prices/{station_id}", tags=["Last prices"], response_model=Station)
 async def get_station_last_prices(
     station_id: int,
     product: Optional[str] = Query(

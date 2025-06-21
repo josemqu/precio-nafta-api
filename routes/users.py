@@ -13,7 +13,11 @@ from config.database import users_collection
 router = APIRouter()
 
 
-@router.post("/users", status_code=201)
+@router.post(
+    "/users",
+    status_code=201,
+    tags=["Users"],
+)
 def create_user(user: UserCreate):
     """
     Create a new user in the database.

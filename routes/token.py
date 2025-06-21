@@ -17,7 +17,7 @@ from auth import (
 router = APIRouter()
 
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, tags=["Auth"])
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Authenticate user and return a JWT access token.

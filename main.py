@@ -22,6 +22,6 @@ app = FastAPI(
 """The FastAPI application instance for the API."""
 
 # Include all routers with /api/v1 prefix
-app.include_router(route.router, prefix="/api/v1", tags=["stations"])
-app.include_router(token.router, prefix="/api/v1", tags=["auth"])
-app.include_router(users.router, prefix="/api/v1", tags=["users"])
+app.include_router(route.router, prefix="/api/v1")
+app.include_router(token.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
