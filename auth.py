@@ -5,11 +5,15 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configuración
-SECRET_KEY = "cambia_esto_por_una_clave_secreta_segura"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -46,10 +50,12 @@ def get_password_hash(password):
 
 def get_user_from_db(username: str):
     from config.database import users_collection
+
     user_dict = users_collection.find_one({"username": username})
     if user_dict:
         return UserInDB(**user_dict)
     return None
+
 
 def get_user(db, username: str):
     # Deprecated: Solo para compatibilidad
