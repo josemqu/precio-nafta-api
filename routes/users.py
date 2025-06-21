@@ -5,13 +5,15 @@ from auth import get_password_hash, fake_users_db
 
 router = APIRouter()
 
+
 class UserCreate(BaseModel):
     username: str
     email: Optional[str] = None
     full_name: Optional[str] = None
     password: str
 
-@router.post("/users/", status_code=201)
+
+@router.post("/users", status_code=201)
 def create_user(user: UserCreate):
     if user.username in fake_users_db:
         raise HTTPException(status_code=400, detail="El usuario ya existe")
