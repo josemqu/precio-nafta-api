@@ -1,7 +1,15 @@
+"""
+route.py
+
+Route definitions for the API.
+
+This module contains the route handlers for the API endpoints, including station queries and price lookups. Each route is documented with its purpose, parameters, and return values.
+"""
+
+from typing import Optional, List
 from pymongo.errors import PyMongoError
 from fastapi import HTTPException, status, Depends
 from fastapi import Query
-from typing import Optional, List
 from fastapi import APIRouter
 from models.stations import Station
 from config.database import collection_name
@@ -26,6 +34,25 @@ async def get_stations(
     limit: int = Query(20, ge=1, le=100, description="Límite de resultados (máx. 100)"),
     current_user: dict = Depends(get_current_active_user),
 ):
+    """
+    Retrieve a list of stations filtered by optional parameters.
+
+    Parameters:
+        province (str, optional): Filter by province name (case-insensitive).
+        town (str, optional): Filter by town/locality name (case-insensitive).
+        flag (str, optional): Filter by flag/brand name (e.g., YPF, Shell, Axion).
+        flag_id (int, optional): Filter by flag/brand ID.
+        product (str, optional): Filter by product name (e.g., Nafta, GNC, Gasoil).
+        product_id (int, optional): Filter by product ID.
+        limit (int): Maximum number of results to return (default: 20, max: 100).
+        current_user (dict): The authenticated user (injected by dependency).
+
+    Returns:
+        List[Station]: A list of stations matching the filters.
+    Raises:
+        HTTPException: If there is a database error or unexpected error.
+    """
+
     try:
         # Construir el pipeline de agregación
         pipeline = []
@@ -64,20 +91,22 @@ async def get_stations(
             pipeline.append({"$match": product_match})
 
         # Agrupar para mantener la estructura de la estación
-        pipeline.append({
-            "$group": {
-                "_id": "$_id",
-                "stationId": {"$first": "$stationId"},
-                "stationName": {"$first": "$stationName"},
-                "address": {"$first": "$address"},
-                "town": {"$first": "$town"},
-                "province": {"$first": "$province"},
-                "flag": {"$first": "$flag"},
-                "flagId": {"$first": "$flagId"},
-                "geometry": {"$first": "$geometry"},
-                "products": {"$push": "$products"},
+        pipeline.append(
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "stationId": {"$first": "$stationId"},
+                    "stationName": {"$first": "$stationName"},
+                    "address": {"$first": "$address"},
+                    "town": {"$first": "$town"},
+                    "province": {"$first": "$province"},
+                    "flag": {"$first": "$flag"},
+                    "flagId": {"$first": "$flagId"},
+                    "geometry": {"$first": "$geometry"},
+                    "products": {"$push": "$products"},
+                }
             }
-        })
+        )
 
         # Ejecutar la agregación
         cursor = collection_name.aggregate(
@@ -110,6 +139,21 @@ async def get_station(
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
     current_user: dict = Depends(get_current_active_user),
 ):
+    """
+    Retrieve a single station by its ID, with optional product filtering.
+
+    Parameters:
+        station_id (int): The unique ID of the station.
+        product (str, optional): Filter by product name (e.g., Nafta, GNC, Gasoil).
+        product_id (int, optional): Filter by product ID.
+        current_user (dict): The authenticated user (injected by dependency).
+
+    Returns:
+        Station: The station matching the ID and filters.
+    Raises:
+        HTTPException: If the station is not found or a database/unexpected error occurs.
+    """
+
     try:
         # Construir el pipeline de agregación
         pipeline = [
@@ -198,6 +242,25 @@ async def get_stations_last_prices(
     limit: int = Query(20, ge=1, le=100, description="Límite de resultados (máx. 100)"),
     current_user: dict = Depends(get_current_active_user),
 ):
+    """
+    Retrieve the most recent prices for all stations filtered by optional parameters.
+
+    Parameters:
+        province (str, optional): Filter by province name.
+        town (str, optional): Filter by town/locality name.
+        flag (str, optional): Filter by flag/brand name.
+        flag_id (int, optional): Filter by flag/brand ID.
+        product (str, optional): Filter by product name.
+        product_id (int, optional): Filter by product ID.
+        limit (int): Maximum number of results to return (default: 20, max: 100).
+        current_user (dict): The authenticated user (injected by dependency).
+
+    Returns:
+        List[Station]: A list of stations with their most recent prices.
+    Raises:
+        HTTPException: If there is a database error or unexpected error.
+    """
+
     try:
         # Construir el pipeline de agregación
         pipeline = []
@@ -372,6 +435,21 @@ async def get_station_last_prices(
     product_id: Optional[int] = Query(None, description="Filtrar por ID de producto"),
     current_user: dict = Depends(get_current_active_user),
 ):
+    """
+    Retrieve the most recent prices for a single station by station ID, with optional product filtering.
+
+    Parameters:
+        station_id (int): The unique ID of the station.
+        product (str, optional): Filter by product name.
+        product_id (int, optional): Filter by product ID.
+        current_user (dict): The authenticated user (injected by dependency).
+
+    Returns:
+        Station: The station with its most recent product prices.
+    Raises:
+        HTTPException: If the station is not found or a database/unexpected error occurs.
+    """
+
     try:
         # Construir el pipeline de agregación
         pipeline = [

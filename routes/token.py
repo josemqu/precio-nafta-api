@@ -1,6 +1,12 @@
+"""
+token.py
+
+Defines the route for obtaining a JWT access token using user credentials.
+"""
+
+from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta
 from auth import (
     authenticate_user,
     create_access_token,
@@ -13,6 +19,18 @@ router = APIRouter()
 
 @router.post("/token", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    """
+    Authenticate user and return a JWT access token.
+
+    Parameters:
+        form_data (OAuth2PasswordRequestForm): The form data containing username and password.
+
+    Returns:
+        dict: A dictionary with the access token and token type.
+
+    Raises:
+        HTTPException: If authentication fails due to invalid credentials.
+    """
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(

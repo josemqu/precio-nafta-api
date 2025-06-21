@@ -1,4 +1,26 @@
+"""
+schema.py
+
+Contains serialization functions to convert MongoDB documents into API-friendly formats.
+"""
+
 def individual_serial(station) -> dict:
+    """
+    Convert a single station document from MongoDB into a serialized dictionary.
+
+    This function handles the conversion of MongoDB's ObjectId to string and
+    structures the station data in a consistent format for API responses.
+
+    Args:
+        station (dict): A MongoDB document representing a fuel station.
+
+    Returns:
+        dict: A dictionary with the station data in a serialized format, including:
+            - Basic station info (id, name, address, etc.)
+            - Geometry data (type and coordinates)
+            - List of products with their prices
+            - Additional metadata (updatedAt, __v)
+    """
     return {
         "id": str(station["_id"]),
         "stationId": station["stationId"],
@@ -34,4 +56,13 @@ def individual_serial(station) -> dict:
 
 
 def list_serial(stations) -> list:
+    """
+    Convert a list of station documents into a list of serialized station dictionaries.
+
+    Args:
+        stations (list): A list of MongoDB documents, each representing a fuel station.
+
+    Returns:
+        list: A list of serialized station dictionaries.
+    """
     return [individual_serial(station) for station in stations]
